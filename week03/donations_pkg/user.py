@@ -16,9 +16,6 @@ def register(database, username):
         print('Username already registered')
         return ''
     else: 
-        if len(username) > 10:
-            print('username must not exceed 10 characters')
-            return ''
         print(f'{username} has been registered')
         return username
 
