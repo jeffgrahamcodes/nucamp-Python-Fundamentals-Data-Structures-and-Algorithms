@@ -21,7 +21,12 @@ while True:
         password = input('Enter password: ')
         authorized_user = login(database, username, password)
     elif option == '2':
-        username = input('Enter username: ')
+        while True:
+            username = input('Enter username: ')
+            if len(username) > 10:
+                print('username must not exceed 10 characters')
+            else:
+                break
         while True:
             password = input('Enter password: ')
             if len(password) < 5:
