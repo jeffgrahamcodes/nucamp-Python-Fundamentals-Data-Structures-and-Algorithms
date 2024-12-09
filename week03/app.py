@@ -15,16 +15,22 @@ while True:
 
     option = input('Choose an option: ')
 
+    # Task 3: Handle user input
     if option == '1':
-        username = input('Enter username: ')
+        username = input('\nEnter username: ')
         password = input('Enter password: ')
         authorized_user = login(database, username, password)
     elif option == '2':
         username = input('Enter username: ')
-        password = input('Enter password: ')
+        while True:
+            password = input('Enter password: ')
+            if len(password) < 5:
+                print('Password must be at least 5 characters long')
+            else:
+                break
         authorized_user = register(database, username)
         if authorized_user != '':
-            database[username] = password
+            database[username.lower()] = password
     elif option == '3':
         if authorized_user == '':
             print('You are not logged in')
