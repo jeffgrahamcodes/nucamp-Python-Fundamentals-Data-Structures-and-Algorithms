@@ -8,7 +8,7 @@ class User:
     # Task 2: Add User class instance methods
     def change_name(self, new_name):
         self.name = new_name
-    
+
     def change_pin(self, new_pin):
         self.pin = new_pin
 
@@ -16,53 +16,89 @@ class User:
         self.password = new_password
 
 # Task 3: Create BankUser subclass
+
+
 class BankUser(User):
     def __init__(self, name, pin, password):
         super().__init__(name, pin, password)
         self.balance = 0
 
     # Task 4: Add BankUser class instance methods
+    def is_valid_amount(self, amount):
+        if amount > 0:
+            return True
+        return False
+
     def show_balance(self):
-        print(f'Balance: {self.balance:.2f}')
+        print(f'{self.name} has an account balance of: ${self.balance:.2f}')
 
     def withdraw(self, amount):
-        self.balance -= amount
+        if self.is_valid_amount(amount):
+            self.balance -= amount
+        else:
+            print('Amount of withdrawal must be greater than 0')
 
     def deposit(self, amount):
-        self.balance += amount
+        if self.is_valid_amount(amount):
+            self.balance += amount
+        else:
+            print('Amount of deposit must be greater than 0')
 
     # Task 5: Transfer and request money
     def transfer_money(self, amount, recipient):
-        print(f'{amount} to {recipient.name}')
+        if self.is_valid_amount(amount):
+            if amount <= self.balance:
+                print(
+                    f'\nYou are transferring ${amount:.2f} to {recipient.name}')
 
-        print('Authprization required')
-        authorization_pin = int(input('Enter you pin:'))
+                print('Authprization required')
+                authorization_pin = int(input('Enter you pin: '))
 
-        if authorization_pin == self.pin:
-            self.withdraw(amount)
-            recipient.deposit(amount)
-            print('Success')
-            return True
+                if authorization_pin == self.pin:
+                    self.withdraw(amount)
+                    recipient.deposit(amount)
+                    print('Transfer Authorized')
+                    print(f'Transferring ${amount:.2f} to {recipient.name}')
+                    return True
+                else:
+                    print('Invalid PIN: Transfer cancelled')
+                    return False
+            else:
+                print(
+                    f"You don't have enough to make that transfer. You only have ${self.balance:.2f}")
         else:
-            print('Failed')
+            print('Amount of transafer must be greater than 0')
             return False
-    
+
     def request_money(self, amount, donor):
-        print(f'{amount} to {donor.name}')
+        if self.is_valid_amount(amount):
+            if amount <= donor.balance:
+                print(f'\nYou are requesting ${amount:.2f} from {donor.name}')
 
-        print('Authprization required')
-        authorization_pin = int(input('Enter donor pin:'))
-        user_password = input('Enter your password')
+                print('Authprization required')
+                authorization_pin = int(input(f"Enter {donor.name}'s pin: "))
+                if authorization_pin != donor.pin:
+                    print('Invalid Pin. Transaction cancelled')
+                    return False
 
-        if authorization_pin == donor.pin and user_password == self.password:
-            donor.withdraw(amount)
-            self.deposit(amount)
-            print('Success')
-            return True
+                user_password = input('Enter your password: ')
+                if user_password != self.password:
+                    print('Invalid Password. Transaction cancelled')
+                    return False
+
+                if authorization_pin == donor.pin and user_password == self.password:
+                    donor.withdraw(amount)
+                    self.deposit(amount)
+                    print('Request Authorized')
+                    print(f'{donor.name} sent ${amount:.2f}')
+                    return True
+            else:
+                print(
+                    f"{donor.name} doesn't have enough to make that transfer.")
         else:
-            print('Failed')
+            print('Amount of request must be greater than 0')
             return False
-        
+
 
 """ Driver Code for Task 1 """
 # user = User('jeff', 1234, 'password')
@@ -89,22 +125,18 @@ class BankUser(User):
 # user.show_balance()
 
 """ Driver Code for Task 5"""
-user1 = BankUser('user1', 1234, 'user1')
-user2 = BankUser('user2', 5678, 'user2')
+randolph = BankUser('randolph', 1234, 'randolphduke')
+mortimer = BankUser('mortimer', 5678, 'mortimerduke')
 
-user2.deposit(5000)
+mortimer.deposit(5000)
 
-user2.show_balance()
-user1.show_balance()
+mortimer.show_balance()
+randolph.show_balance()
 
-if user2.transfer_money(500, user1):
-    user2.show_balance()
-    user1.show_balance()
-    user2.request_money(200, user1)
+if mortimer.transfer_money(500, randolph):
+    mortimer.show_balance()
+    randolph.show_balance()
+    mortimer.request_money(25000, randolph)
 
-user2.show_balance()
-user1.show_balance()
-
-
-
-
+mortimer.show_balance()
+randolph.show_balance()
