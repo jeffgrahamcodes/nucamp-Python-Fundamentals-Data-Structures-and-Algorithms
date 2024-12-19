@@ -54,37 +54,50 @@ while True:
     print("S) Move South")
     print("E) Move East")
     print("W) Move West")
-    option = input("What would do want to do: ")
+    option = input("What would do want to do: ").upper()
 
     if option == "1":
-        print(rooms[player.current_room]['description'])
+        print(rooms[player.current_room]['description'] + '\n')
     if option == "2":
         if player.inventory:
             print(len(player.inventory))
         else:
-            print("empty")
+            print("inventory empty")
     if option == "3":
         if rooms[player.current_room]['items']:
-            print('There are items')
+            print('You see the following item(s) in the room:')
+            for item in rooms[player.current_room]['items']:
+                print(item)
         else:
             print('room empty')
+    if option == "4":
+        if rooms[player.current_room]['items']:
+            item = rooms[player.current_room]['items'].pop()
+            player.pick_up_item(item)
+            print(f'You pick up the {item} amd add it to your inventory')
+        else:
+            print('nothing to pick up in this room')
     if option == 'N':
         if 'north' in rooms[player.current_room]['exits']:
-            print(rooms[player.current_room]['exits']['north'])
+            player.move(rooms[player.current_room]['exits']['north'])
+            print(f'You enter the {player.current_room}\n')
         else:
             print('Cannot go that way')
     if option == 'S':
         if 'south' in rooms[player.current_room]['exits']:
-            print(rooms[player.current_room]['exits']['north'])
+            player.move(rooms[player.current_room]['exits']['south'])
+            print(f'You enter the {player.current_room}\n')
         else:
             print('Cannot go that way')
     if option == 'E':
         if 'east' in rooms[player.current_room]['exits']:
-            print(rooms[player.current_room]['exits']['east'])
+            player.move(rooms[player.current_room]['exits']['east'])
+            print(f'You enter the {player.current_room}\n')
         else:
             print('Cannot go that way')
     if option == 'W':
         if 'west' in rooms[player.current_room]['exits']:
-            print(rooms[player.current_room]['exits']['west'])
+            player.move(rooms[player.current_room]['exits']['west'])
+            print(f'You enter the {player.current_room}\n')
         else:
             print('Cannot go that way')
