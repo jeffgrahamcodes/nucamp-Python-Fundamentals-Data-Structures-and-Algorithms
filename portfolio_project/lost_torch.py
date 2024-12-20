@@ -13,65 +13,74 @@ class Player:
         return item in self.inventory
 
 
+class Room:
+    def __init__(self, description, items=None, exits=None):
+        self.description = description
+        self.items = items if items else []
+        self.exits = exits if exits else {}
+
+    def remove_item(self, item):
+        if item in self.items:
+            self.items.remove(item)
+
+    def get_exit(self, direction):
+        return self.exits.get(direction)
+
+
 rooms = {
-    "Entrance Hall": {
-        "description": "You stand in a dimly lit hall. The floor is dusty and a single torch flickers on the wall. There's a door to the north.",
-        "items": [],
-        "exits": {
-            "north": "Treasure Room"
-        }
-    },
-    "Treasure Room": {
-        "description": "The room is small and cramped. A chest rests in the corner. A faint glow comes from inside it.",
-        "items": ["treasure"],
-        "exits": {
+    "Entrance Hall": Room(
+        description="You stand in a dimly lit hall. The floor is dusty and a single torch flickers on the wall. There's a door to the north.",
+        items=[],
+        exits={"north": "Treasure Room"}
+    ),
+    "Treasure Room": Room(
+        description="The room is small and cramped. A chest rests in the corner. A faint glow comes from inside it.",
+        items=["treasure"],
+        exits={
             "south": "Entrance Hall",
             "east": "Exit"
         }
-    },
-    "Exit": {
-        "description": "A narrow corridor leads to a heavy wooden door. Beyond it, you see daylight. This must be the way out!",
-        "items": [],
-        "exits": {
-            "west": "Treasure Room"
-        }
-    }
+    ),
+    "Exit": Room(
+        description="A narrow corridor leads to a heavy wooden door. Beyond it, you see daylight. This must be the way out!",
+        items=[],
+        exits={"west": "Treasure Room"}
+    )
 }
 
 player = Player('Entrance Hall')
 
 
 def move_player(direction):
-    current = player.current_room
-    if direction not in rooms[current]['exits']:
+    current_room = rooms[player.current_room]
+    new_room_name = current_room.get_exit(direction)
+
+    if not new_room_name:
         print('Cannot go that way\n')
-        return
+        return False
 
-    new_room = rooms[current]['exits'][direction]
-
-    # Check if the new room is the Exit and if the player has the treasure
-    if new_room == "Exit" and not player.has_item('treasure'):
+    # Check if trying to enter exit room without treasure
+    if new_room_name == "Exit" and not player.has_item('treasure'):
         print("The exit is locked! You need the treasure to leave.\n")
-        return
+        return False
 
-    player.move(new_room)
+    player.move(new_room_name)
 
-    # If the player reaches the Exit, show its description and end the game loop
     if player.current_room == 'Exit':
-        print(rooms[player.current_room]['description'])
-        # Potentially break out of the loop or return a flag to end game
-        return
+        print(rooms[player.current_room].description)
+        return True
 
     print(f'You enter the {player.current_room}\n')
+    return False
 
 
 def show_room_description():
-    print(rooms[player.current_room]['description'] + '\n')
+    print(rooms[player.current_room].description + '\n')
 
 
 def show_inventory():
     if player.inventory:
-        print("You have the following items:")
+        print("You have the following item(s):")
         for i in player.inventory:
             print(i)
         print()
@@ -80,9 +89,10 @@ def show_inventory():
 
 
 def show_room_items():
-    if rooms[player.current_room]['items']:
+    current_room = rooms[player.current_room]
+    if current_room.items:
         print('You see the following item(s) in the room:')
-        for item in rooms[player.current_room]['items']:
+        for item in current_room.items:
             print(item)
         print()
     else:
@@ -90,15 +100,27 @@ def show_room_items():
 
 
 def pick_up_item():
-    if rooms[player.current_room]['items']:
-        item = rooms[player.current_room]['items'].pop()
+    current_room = rooms[player.current_room]
+    if current_room.items:
+        item = current_room.items.pop()
         player.pick_up_item(item)
         print(f'You pick up the {item} and add it to your inventory.\n')
     else:
         print('There is nothing to pick up here.\n')
 
 
+def reset_game():
+    # Reset player position and inventory
+    player.current_room = 'Entrance Hall'
+    player.inventory = []
+    # Reset the treasure in the Treasure Room if you want a fresh start
+    rooms["Treasure Room"].items = ["treasure"]
+
+
 while True:
+    # Initialize reached_exit for each loop iteration
+    reached_exit = False
+
     # Display options
     print("1) Get room description")
     print("2) Check Inventory")
@@ -121,12 +143,23 @@ while True:
     elif option == "4":
         pick_up_item()
     elif option == 'N':
-        move_player('north')
+        reached_exit = move_player('north')
     elif option == 'S':
-        move_player('south')
+        reached_exit = move_player('south')
     elif option == 'E':
-        move_player('east')
+        reached_exit = move_player('east')
     elif option == 'W':
-        move_player('west')
+        reached_exit = move_player('west')
     else:
         print("Invalid choice. Please try again.\n")
+        continue
+
+    # Check if the player reached the exit and has the treasure
+    if reached_exit:
+        choice = input(
+            "You have escaped with the treasure! Play again? (Y/N): ").upper().strip()
+        if choice == 'Y':
+            reset_game()
+        else:
+            print("Thanks for playing!")
+            break
